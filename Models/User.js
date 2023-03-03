@@ -6,17 +6,21 @@ const UserSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: "User",
     },
 
-    name: {
+    fullname: {
       type: String,
       required: true,
     },
 
     email: {
-      type: Boolean,
-      default: false,
+      type: String,
+      required: true,
+    },
+
+    phone: {
+      type: String,
+      required: true,
     },
 
     balance: {
@@ -33,5 +37,4 @@ const UserSchema = new Schema(
 );
 
 const User = mongoose.model("User", UserSchema);
-
 module.exports = User;
