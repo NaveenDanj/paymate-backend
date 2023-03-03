@@ -16,7 +16,7 @@ const TokenSchema = new Schema(
     type: {
       type: String,
       required: true,
-      enum: ["auth"],
+      enum: ["auth", "activation"],
     },
 
     deviceType: {
