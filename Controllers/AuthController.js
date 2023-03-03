@@ -14,14 +14,30 @@ router.post("/", async (req, res) => {
   });
 
   try {
-    const val = await validator.validateAsync(req.body, { abortEarly: false });
-
-    let user = new Invoice({
+    await validator.validateAsync(req.body, { abortEarly: false });
+    const hashedPassword = await hashPasswod(req.body.password);
+    let user = new User({
       fullname: req.body.fullname,
       email: req.body.email,
       phone: req.body.phone,
-      password: req.body.password,
+      password: hashedPassword,
     });
+
+    // check of user email
+    let email_check = await User.findOne({ email: req.body.email });
+    if (email_check) {
+      return res.status(400).json({
+        message: "Email already user in another account!",
+      });
+    }
+
+    // check for user phone
+    let phone_check = await User.findOne({ phone: req.body.phone });
+    if (phone_check) {
+      return res.status(400).json({
+        message: "Phone number already user in another account!",
+      });
+    }
 
     let userObject = await user.save();
 
@@ -31,7 +47,7 @@ router.post("/", async (req, res) => {
     });
   } catch (err) {
     return res.status(400).json({
-      message: "Error creating job",
+      message: "Error creating user",
       error: err,
     });
   }

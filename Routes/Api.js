@@ -4,7 +4,7 @@ const router = express.Router();
 const AuthController = require("../Controllers/AuthController");
 
 router.get("/", (req, res) => {
-  res.json("ILM API");
+  res.json("Paymate API");
 });
 
 // router.use("/auth", AuthRequired("User"), AuthController);

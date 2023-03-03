@@ -5,7 +5,6 @@ const UserSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      required: true,
     },
 
     fullname: {
@@ -26,6 +25,11 @@ const UserSchema = new Schema(
     balance: {
       type: Number,
       default: 0,
+    },
+
+    activated: {
+      type: Boolean,
+      default: false,
     },
 
     password: {
