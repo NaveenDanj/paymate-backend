@@ -5,6 +5,7 @@ const router = express.Router();
 const Joi = require("joi");
 const { hashPasswod, comparePassword } = require("../Services/passwordService");
 const { generateToken } = require("../Services/JWTService");
+const AuthRequired = require("../Middlewares/AuthRequired");
 
 router.post("/", async (req, res) => {
   let validator = Joi.object({
@@ -157,6 +158,37 @@ router.post("/login-phone", async (req, res) => {
   } catch (err) {
     return res.status(400).json({
       message: "Error logging in user",
+      error: err,
+    });
+  }
+});
+
+router.get("/current-user", AuthRequired("User"), async (req, res) => {
+  return res.status(200).json({
+    user: req.user,
+  });
+});
+
+router.post("/logout", AuthRequired("User"), async (req, res) => {
+  let user_token = req.headers["authorization"];
+
+  try {
+    let token = await Token.findOne({ token: user_token });
+
+    if (!token) {
+      return res.status(400).json({
+        message: "Access denied",
+      });
+    }
+
+    await token.deleteOne();
+
+    return res.status(200).json({
+      message: "User logged out successfully",
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Error logout user",
       error: err,
     });
   }

@@ -12,7 +12,7 @@ const AuthRequired = (userRole) => {
     };
 
     if (!token) {
-      return res.status(401).send({ error: "Token not provided" });
+      return res.status(401).send({ error: "Invalid token" });
     }
 
     // in future check if token is in blacklist(logged out before token expired)
@@ -20,10 +20,10 @@ const AuthRequired = (userRole) => {
       let checkExists = await Token.findOne({ token: token });
 
       if (!checkExists) {
-        return res.status(401).send({ error: "Token not valid" });
+        return res.status(401).send({ error: "Invalid token" });
       }
     } catch (err) {
-      return res.status(401).send({ error: "Token not valid" });
+      return res.status(401).send({ error: "Invalid token" });
     }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, userObject) => {

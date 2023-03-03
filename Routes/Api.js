@@ -8,6 +8,6 @@ router.get("/", (req, res) => {
 });
 
 // router.use("/auth", AuthRequired("User"), AuthController);
-router.use("/auth", AuthController);
+router.use("/client/auth", AuthController);
 
 module.exports = router;
