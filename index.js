@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
-const Api = require("./routes/api");
+// const Api = require("./routes/api");
 
 // connect to mongodb
 mongoose
@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
 // initialize api routes
-app.use("/api/v1", Api);
+// app.use("/api/v1", Api);
 
 let PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
