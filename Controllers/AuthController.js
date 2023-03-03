@@ -53,4 +53,102 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.post("/login-email", async (req, res) => {
+  let validator = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+
+    let user = await User.findOne({ email: data.email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Email or password is incorrect!",
+      });
+    }
+
+    const isMatch = await comparePassword(data.password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Email or password is incorrect!",
+      });
+    }
+
+    let _token = generateToken({ email: user.email });
+
+    let accessToken = new AccessToken({
+      userId: user._id,
+      token: _token,
+    });
+
+    await accessToken.save();
+
+    delete user.password;
+
+    return res.status(200).json({
+      message: "User logged in successfully",
+      user: user,
+      token: _token,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Error logging in user",
+      error: err,
+    });
+  }
+});
+
+router.post("/login-phone", async (req, res) => {
+  let validator = Joi.object({
+    phone: Joi.string().required(),
+    password: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+
+    let user = await User.findOne({ phone: data.phone });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Email or password is incorrect!",
+      });
+    }
+
+    const isMatch = await comparePassword(data.password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Email or password is incorrect!",
+      });
+    }
+
+    let _token = generateToken({ email: user.email });
+
+    let accessToken = new AccessToken({
+      userId: user._id,
+      token: _token,
+    });
+
+    await accessToken.save();
+
+    delete user.password;
+
+    return res.status(200).json({
+      message: "User logged in successfully",
+      user: user,
+      token: _token,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Error logging in user",
+      error: err,
+    });
+  }
+});
+
 module.exports = router;
