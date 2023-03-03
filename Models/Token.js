@@ -7,16 +7,32 @@ const TokenSchema = new Schema(
       type: Schema.Types.ObjectId,
     },
 
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+
     type: {
       type: String,
       required: true,
       enum: ["auth"],
     },
 
+    deviceType: {
+      type: String,
+      required: true,
+    },
+
     token: {
       type: String,
       required: true,
       unique: true,
+    },
+
+    IPAddress: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }

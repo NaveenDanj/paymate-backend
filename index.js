@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { ipMiddleware } = require("./Middlewares/GetIP");
 require("dotenv").config();
 
 const Api = require("./Routes/Api.js");
@@ -22,6 +23,7 @@ mongoose
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
+app.use("/", ipMiddleware());
 
 // initialize api routes
 app.use("/api/v1", Api);
