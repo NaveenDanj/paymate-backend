@@ -157,7 +157,7 @@ router.post("/login-email", async (req, res) => {
       token: _token,
       type: "auth",
       deviceType: data.deviceType,
-      IPAddress: req.socket.remoteAddress,
+      IPAddress: ip,
     });
 
     await accessToken.save();
@@ -211,7 +211,7 @@ router.post("/login-phone", async (req, res) => {
       token: _token,
       type: "auth",
       deviceType: data.deviceType,
-      IPAddress: req.socket.remoteAddress,
+      IPAddress: ip,
     });
 
     await accessToken.save();
