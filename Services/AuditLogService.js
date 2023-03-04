@@ -1,4 +1,5 @@
 const AuditLog = require("../Models/AuditLog");
+const { parse, stringify, toJSON, fromJSON } = require("flatted");
 
 const AuditLogRecord = async (req, res, type) => {
   let headers = req.headers;
@@ -6,10 +7,10 @@ const AuditLogRecord = async (req, res, type) => {
   let audit_log_obj = new AuditLog({
     userId: req.user ? req.user : null,
     type: type,
-    IPAddress: req.clientIp,
-    request: req,
-    response: res,
-    headers: headers,
+    IPAddress: req.socket.remoteAddress,
+    request: stringify(req),
+    response: stringify(res),
+    headers: stringify(headers),
   });
 
   await audit_log_obj.save();

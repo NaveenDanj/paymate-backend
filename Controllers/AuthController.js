@@ -7,6 +7,7 @@ const { hashPasswod, comparePassword } = require("../Services/passwordService");
 const { generateToken } = require("../Services/JWTService");
 const { generateUUIDToken } = require("../Services/TokenService");
 const AuthRequired = require("../Middlewares/AuthRequired");
+const AuditLogRecord = require("../Services/AuditLogService");
 
 router.post("/", async (req, res) => {
   let validator = Joi.object({
@@ -157,12 +158,14 @@ router.post("/login-email", async (req, res) => {
       token: _token,
       type: "auth",
       deviceType: data.deviceType,
-      IPAddress: ip,
+      IPAddress: req.socket.remoteAddress,
     });
 
     await accessToken.save();
 
     delete user.password;
+
+    AuditLogRecord(req, res, "Login-email");
 
     return res.status(200).json({
       message: "User logged in successfully",
@@ -211,7 +214,7 @@ router.post("/login-phone", async (req, res) => {
       token: _token,
       type: "auth",
       deviceType: data.deviceType,
-      IPAddress: ip,
+      IPAddress: req.socket.remoteAddress,
     });
 
     await accessToken.save();

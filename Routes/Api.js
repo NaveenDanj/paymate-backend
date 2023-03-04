@@ -4,7 +4,7 @@ const router = express.Router();
 const AuthController = require("../Controllers/AuthController");
 
 router.get("/", (req, res) => {
-  res.json("Paymate API");
+  res.json("Paymate API v1.0.0");
 });
 
 // router.use("/auth", AuthRequired("User"), AuthController);
