@@ -20,7 +20,7 @@ const WalletSchema = new Schema(
 
     activated: {
       type: Boolean,
-      default: true,
+      default: false,
     },
 
     Balance: {

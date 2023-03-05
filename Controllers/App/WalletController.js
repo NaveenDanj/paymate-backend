@@ -46,4 +46,13 @@ router.post("/wallet-change-status", async (req, res) => {
   }
 });
 
+router.post("/add-card", async (req, res) => {
+  let user = req.user;
+  return false;
+});
+
+router.post("/remove-current-card", async (req, res) => {
+  return false;
+});
+
 module.exports = router;
