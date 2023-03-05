@@ -6,7 +6,7 @@ const WalletController = require("../Controllers/App/WalletController");
 const AuthRequired = require("../Middlewares/AuthRequired");
 
 router.get("/", (req, res) => {
-  res.json("Paymate API v1.0.0");
+  return res.json({ message: "Paymate API v1.0.0" });
 });
 
 // router.use("/auth", AuthRequired("User"), AuthController);

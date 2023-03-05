@@ -3,6 +3,10 @@ const Schema = mongoose.Schema;
 
 const CardInformationSchema = new Schema(
   {
+    id: {
+      type: Schema.Types.ObjectId,
+    },
+
     walletId: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -15,6 +19,11 @@ const CardInformationSchema = new Schema(
       ref: "User",
     },
 
+    cardId: {
+      type: String,
+      required: true,
+    },
+
     cardHolderName: {
       type: String,
       required: true,
@@ -25,7 +34,12 @@ const CardInformationSchema = new Schema(
       required: true,
     },
 
-    expireDate: {
+    expireYear: {
+      type: String,
+      required: true,
+    },
+
+    expireMonth: {
       type: String,
       required: true,
     },
