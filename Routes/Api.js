@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const AuthController = require("../Controllers/AuthController");
+const WalletController = require("../Controllers/App/WalletController");
+const AuthRequired = require("../Middlewares/AuthRequired");
 
 router.get("/", (req, res) => {
   res.json("Paymate API v1.0.0");
@@ -9,5 +11,6 @@ router.get("/", (req, res) => {
 
 // router.use("/auth", AuthRequired("User"), AuthController);
 router.use("/client/auth", AuthController);
+router.use("/wallet", WalletController);
 
 module.exports = router;

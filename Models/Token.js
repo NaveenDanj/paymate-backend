@@ -16,7 +16,7 @@ const TokenSchema = new Schema(
     type: {
       type: String,
       required: true,
-      enum: ["auth", "activation"],
+      enum: ["auth", "activation", "password-reset", "password-reset-act"],
     },
 
     deviceType: {
@@ -33,6 +33,12 @@ const TokenSchema = new Schema(
     IPAddress: {
       type: String,
       required: true,
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      expires: "1m",
     },
   },
   { timestamps: true }

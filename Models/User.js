@@ -29,7 +29,7 @@ const UserSchema = new Schema(
 
     activated: {
       type: Boolean,
-      default: false,
+      default: true,
     },
 
     password: {

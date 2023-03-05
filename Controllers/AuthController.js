@@ -8,6 +8,7 @@ const { generateToken } = require("../Services/JWTService");
 const { generateUUIDToken } = require("../Services/TokenService");
 const AuthRequired = require("../Middlewares/AuthRequired");
 const AuditLogRecord = require("../Services/AuditLogService");
+const Wallet = require("../Models/Wallet");
 
 router.post("/", async (req, res) => {
   let validator = Joi.object({
@@ -56,6 +57,14 @@ router.post("/", async (req, res) => {
     });
 
     await activationToken.save();
+
+    // create user wallet
+    let _wallet = new Wallet({
+      userId: user._id,
+      name: req.body.fullname + "'s wallet",
+    });
+
+    _wallet.save();
 
     // send activation otp to email later to the phone as sms
 
@@ -221,6 +230,8 @@ router.post("/login-phone", async (req, res) => {
 
     delete user.password;
 
+    AuditLogRecord(req, res, "Login-phone");
+
     return res.status(200).json({
       message: "User logged in successfully",
       user: user,
@@ -254,12 +265,163 @@ router.post("/logout", AuthRequired("User"), async (req, res) => {
 
     await token.deleteOne();
 
+    AuditLogRecord(req, res, "Logout");
+
     return res.status(200).json({
       message: "User logged out successfully",
     });
   } catch (err) {
     return res.status(400).json({
       message: "Error logout user",
+      error: err,
+    });
+  }
+});
+
+router.post("/forgot-password-send-token", async (req, res) => {
+  let validator = Joi.object({
+    email: Joi.string().email().required(),
+    deviceType: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    const user = await User.findOne({ email: data.email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found!",
+      });
+    }
+
+    let token = generateUUIDToken();
+    let has_token_generated_before = await Token.find({
+      userId: user._id,
+      type: "password-reset",
+    });
+
+    if (has_token_generated_before.length > 0) {
+      return res.status(401).json({
+        message: "Previous token not expired yet!",
+      });
+    }
+
+    let new_token = new Token({
+      userId: user._id,
+      token: token,
+      type: "password-reset",
+      deviceType: data.deviceType,
+      IPAddress: req.socket.remoteAddress,
+    });
+
+    await new_token.save();
+
+    // send token to the user email
+
+    return res.status(200).json({
+      message: "Password reset token send to your email!",
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Something went wrong. Please try again!",
+      error: err,
+    });
+  }
+});
+
+router.post("/forgot-password-verify-token", async (req, res) => {
+  let validator = Joi.object({
+    email: Joi.string().email().required(),
+    deviceType: Joi.string().required(),
+    token: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    const user = await User.findOne({ email: data.email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found!",
+      });
+    }
+
+    let token_exists = await Token.findOne({
+      userId: user._id,
+      type: "password-reset",
+      token: data.token,
+    });
+
+    if (!token_exists) {
+      return res.status(404).json({
+        message: "Token verification failed!",
+      });
+    }
+
+    let token = generateUUIDToken();
+
+    let new_token = new Token({
+      userId: user._id,
+      token: token,
+      type: "password-reset-act",
+      deviceType: data.deviceType,
+      IPAddress: req.socket.remoteAddress,
+    });
+
+    await new_token.save();
+    await token_exists.deleteOne();
+
+    // send token to the user email
+
+    return res.status(200).json({
+      message: "Token verfied successfully!",
+      resetPasswordtoken: token,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Something went wrong. Please try again!",
+      error: err,
+    });
+  }
+});
+
+router.post("/forgot-password-reset-password", async (req, res) => {
+  let validator = Joi.object({
+    token: Joi.string().required(),
+    password: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    const user = await User.findOne({ email: data.email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found!",
+      });
+    }
+
+    let token_exists = await Token.findOne({
+      userId: user._id,
+      type: "password-reset-act",
+      token: data.token,
+    });
+
+    if (!token_exists) {
+      return res.status(404).json({
+        message: "Token verification failed!",
+      });
+    }
+
+    user.password = await hashPasswod(data.password);
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password reseted successfully!",
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Something went wrong. Please try again!",
       error: err,
     });
   }
