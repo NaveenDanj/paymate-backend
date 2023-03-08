@@ -12,7 +12,7 @@ const AuthRequired = (userRole) => {
     };
 
     if (!token) {
-      return res.status(401).send({ error: "Invalid token" });
+      return res.status(401).send({ error: "Unauthenticated" });
     }
 
     // in future check if token is in blacklist(logged out before token expired)
@@ -20,14 +20,14 @@ const AuthRequired = (userRole) => {
       let checkExists = await Token.findOne({ token: token });
 
       if (!checkExists) {
-        return res.status(401).send({ error: "Invalid token" });
+        return res.status(401).send({ error: "Unauthenticated" });
       }
     } catch (err) {
-      return res.status(401).send({ error: "Invalid token" });
+      return res.status(401).send({ error: "Unauthenticated" });
     }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, userObject) => {
-      if (err) return res.status(403).json({ message: "Invalid token" });
+      if (err) return res.status(403).json({ message: "Unauthenticated" });
 
       try {
         let user = await User.findOne({ email: userObject.email }).select(
@@ -40,7 +40,7 @@ const AuthRequired = (userRole) => {
         req.user = user;
         next();
       } catch (err) {
-        return res.status(401).send({ error: "Error while finding user" });
+        return res.status(401).send({ error: "Unauthenticated" });
       }
     });
   };

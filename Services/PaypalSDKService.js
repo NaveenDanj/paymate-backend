@@ -30,8 +30,8 @@ const createPayment = async (amount) => {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000/cancel",
+      return_url: process.env.BASE_URL + "/payments/success",
+      cancel_url: process.env.BASE_URL + "/payments/cancel",
     },
     transactions: [
       {
@@ -58,4 +58,21 @@ const createPayment = async (amount) => {
   });
 };
 
-module.exports = { paypal, validateCardInformation, createPayment };
+const getTransactionStatus = async (payId) => {
+  return new Promise((resolve, reject) => {
+    paypal.payment.get(payId, function (error, payment) {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(payment);
+      }
+    });
+  });
+};
+
+module.exports = {
+  paypal,
+  validateCardInformation,
+  createPayment,
+  getTransactionStatus,
+};
