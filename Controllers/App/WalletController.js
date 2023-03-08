@@ -3,7 +3,10 @@ const Wallet = require("../../Models/Wallet");
 const User = require("../../Models/User");
 const router = express.Router();
 const Joi = require("joi");
-const { validateCardInformation } = require("../../Services/PaypalSDKService");
+const {
+  validateCardInformation,
+  createPayment,
+} = require("../../Services/PaypalSDKService");
 const CardInformation = require("../../Models/CardInformation");
 const AuthRequired = require("../../Middlewares/AuthRequired");
 const { hashData } = require("../../Services/passwordService");
@@ -123,8 +126,73 @@ router.post("/add-card", AuthRequired("User"), async (req, res) => {
   }
 });
 
-router.post("/remove-current-card", async (req, res) => {
-  return false;
+router.post("/remove-current-card", AuthRequired("User"), async (req, res) => {
+  let validator = Joi.object({
+    walletId: Joi.string().required(),
+    cardNumber: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    let user = req.user;
+    let wallet = await Wallet.findOne({
+      userId: user._id,
+      _id: data.walletId,
+    });
+
+    if (!wallet) {
+      return res.status(404).json({
+        message: "wallet not found!",
+      });
+    }
+
+    let cardInfo = await CardInformation.findOne({
+      userId: user._id,
+      cardNumber: data.cardNumber,
+      walletId: data.walletId,
+    });
+
+    if (!cardInfo) {
+      return res.status(404).json({
+        message: "card information not found!",
+      });
+    }
+
+    await cardInfo.deleteOne();
+
+    return res.status(200).json({
+      message: "Card information deleted successfully!",
+    });
+  } catch (err) {
+    return res.status(404).json({
+      message: "wallet not found!",
+    });
+  }
+});
+
+router.post("/topup-wallet", AuthRequired("User"), async (req, res) => {
+  let validator = Joi.object({
+    amount: Joi.number().required(),
+    // cardNumber: Joi.string().required(),
+  });
+
+  try {
+    let user = req.user;
+    let wallet = await Wallet.findOne({ userId: user._id });
+
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    let response = await createPayment(data.amount);
+
+    return res.status(200).json({
+      message: "Payment Request added",
+      response: response,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Something went wrong. Please try again!",
+      error: err,
+    });
+  }
 });
 
 module.exports = router;
