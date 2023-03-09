@@ -9,6 +9,12 @@ const PaymentSchema = new Schema(
       unique: true,
     },
 
+    walletId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "Wallet",
+    },
+
     userId: {
       type: Schema.Types.ObjectId,
       required: true,

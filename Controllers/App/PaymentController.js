@@ -19,7 +19,7 @@ router.get("/success", async (req, res) => {
   }
 
   //   get the payment object by pay-id
-  let payment = await Payment.findOne({ payerID: paymentId });
+  let payment = await Payment.findOne({ PayId: paymentId });
 
   if (!payment) {
     return res.status(404).json({

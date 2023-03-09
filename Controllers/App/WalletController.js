@@ -185,10 +185,13 @@ router.post("/topup-wallet", AuthRequired("User"), async (req, res) => {
     let response = await createPayment(data.amount);
 
     let payment = new Payment({
-      payId: response.response.id,
-      status: response.response.state,
+      userId: user._id,
+      walletId: wallet._id,
+      PayId: response.id,
+      status: response.state,
       amount: data.amount,
       paymentObject: JSON.stringify(response),
+      type: "topup",
     });
 
     await payment.save();
