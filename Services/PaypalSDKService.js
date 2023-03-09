@@ -74,14 +74,14 @@ const webHookCallback = async (req, res) => {
   return new Promise((resolve, reject) => {
     paypal.notification.webhookEvent.verify(
       req.headers,
-      body,
+      req.body,
       function (error, response) {
         if (error) {
           reject(error);
         }
 
         // Get the transaction details
-        paypal.payment.get(transactionId, function (error, payment) {
+        paypal.payment.get(req.body.id, function (error, payment) {
           if (error) {
             reject(error);
           }
