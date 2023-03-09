@@ -184,7 +184,6 @@ router.post("/callback", async (req, res) => {
   const body = req.body;
   try {
     let response = await webHookCallback(req, res);
-
     let log = new PaymentCallBackLog({
       callBackObject: response,
     });
@@ -198,7 +197,7 @@ router.post("/callback", async (req, res) => {
     });
   } catch (err) {
     res.status(400).json({
-      message: "Error while processing the server callback",
+      message: "Error while processing the serer callback",
     });
   }
 });
