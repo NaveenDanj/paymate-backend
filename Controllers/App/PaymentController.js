@@ -191,6 +191,8 @@ router.post("/callback", async (req, res) => {
 
     await log.save();
 
+    console.log(log);
+
     return res.status(200).json({
       message: "Transaction succeed",
     });
