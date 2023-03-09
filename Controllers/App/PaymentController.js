@@ -3,6 +3,7 @@ const router = express.Router();
 const Joi = require("joi");
 const Payment = require("../../Models/Payment");
 const { webHookCallback } = require("../../Services/PaypalSDKService");
+const PaymentCallBackLog = require("../../Models/PaymentCallBackLog");
 
 // http://localhost:3000/success?paymentId=PAYID-MQEMC4I8J363980MC261522Y&token=EC-92M65422H50622442&PayerID=97WEGB5YA5B2U
 
@@ -71,6 +72,13 @@ router.post("/callback", async (req, res) => {
   const transactionId = body.txn_id;
   try {
     let response = await webHookCallback(req, res);
+
+    let log = new PaymentCallBackLog({
+      callBackObject: response,
+    });
+
+    await log.save();
+
     return res.status(200).json({
       message: "Transaction succeed",
     });
