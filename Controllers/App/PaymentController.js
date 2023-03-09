@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Joi = require("joi");
 const Payment = require("../../Models/Payment");
+const { webHookCallback } = require("../../Services/PaypalSDKService");
 
 // http://localhost:3000/success?paymentId=PAYID-MQEMC4I8J363980MC261522Y&token=EC-92M65422H50622442&PayerID=97WEGB5YA5B2U
 
@@ -63,6 +64,21 @@ router.get("/cancel", async (req, res) => {
   return res.status(200).json({
     message: "Payment is not completed!",
   });
+});
+
+router.post("/callback", async (req, res) => {
+  const body = req.body;
+  const transactionId = body.txn_id;
+  try {
+    let response = await webHookCallback(req, res);
+    return res.status(200).json({
+      message: "Transaction succeed",
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: "Error while processing the server callback",
+    });
+  }
 });
 
 module.exports = router;

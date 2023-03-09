@@ -70,9 +70,34 @@ const getTransactionStatus = async (payId) => {
   });
 };
 
+const webHookCallback = async (req, res) => {
+  return new Promise((resolve, reject) => {
+    paypal.notification.webhookEvent.verify(
+      req.headers,
+      body,
+      function (error, response) {
+        if (error) {
+          reject(error);
+        }
+
+        // Get the transaction details
+        paypal.payment.get(transactionId, function (error, payment) {
+          if (error) {
+            reject(error);
+          }
+
+          // Save the transaction details to your database
+          resolve(payment);
+        });
+      }
+    );
+  });
+};
+
 module.exports = {
   paypal,
   validateCardInformation,
   createPayment,
   getTransactionStatus,
+  webHookCallback,
 };
