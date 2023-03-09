@@ -3,8 +3,10 @@ const Schema = mongoose.Schema;
 
 const PaymentSchema = new Schema(
   {
-    walletId: {
-      type: Schema.Types.ObjectId,
+    PayId: {
+      type: String,
+      required: true,
+      unique: true,
     },
 
     userId: {
@@ -22,7 +24,7 @@ const PaymentSchema = new Schema(
     status: {
       type: String,
       required: true,
-      enum: ["pending", "success", "cancelled", "failed"],
+      enum: ["created", "pending", "success", "cancelled", "failed"],
     },
 
     amount: {

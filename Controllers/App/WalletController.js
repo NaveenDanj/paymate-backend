@@ -10,6 +10,7 @@ const {
 const CardInformation = require("../../Models/CardInformation");
 const AuthRequired = require("../../Middlewares/AuthRequired");
 const { hashData } = require("../../Services/passwordService");
+const Payment = require("../../Models/Payment");
 
 router.get("/", async (req, res) => {
   let page = +req.query.page || 1;
@@ -182,6 +183,15 @@ router.post("/topup-wallet", AuthRequired("User"), async (req, res) => {
 
     const data = await validator.validateAsync(req.body, { abortEarly: false });
     let response = await createPayment(data.amount);
+
+    let payment = new Payment({
+      payId: response.response.id,
+      status: response.response.state,
+      amount: data.amount,
+      paymentObject: JSON.stringify(response),
+    });
+
+    await payment.save();
 
     return res.status(200).json({
       message: "Payment Request added",
