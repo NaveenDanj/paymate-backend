@@ -68,8 +68,120 @@ router.get("/cancel", async (req, res) => {
 });
 
 router.post("/callback", async (req, res) => {
+  // {
+  //   "id": "WH-36J85531N6456625V-9DY49322TM581760P",
+  //   "create_time": "2023-03-09T13:35:43.957Z",
+  //   "resource_type": "payment",
+  //   "event_type": "PAYMENTS.PAYMENT.CREATED",
+  //   "summary": "Checkout payment is created and approved by buyer",
+  //   "resource": {
+  //     "update_time": "2023-03-09T13:35:43Z",
+  //     "create_time": "2023-03-09T13:33:14Z",
+  //     "redirect_urls": {
+  //       "return_url": "http://localhost:5000/api/v1/payments/success?paymentId=PAYID-MQE6AGY1VT87058TJ580034T",
+  //       "cancel_url": "http://localhost:5000/api/v1/payments/cancel"
+  //     },
+  //     "links": [
+  //       {
+  //         "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MQE6AGY1VT87058TJ580034T",
+  //         "rel": "self",
+  //         "method": "GET"
+  //       },
+  //       {
+  //         "href": "https://api.sandbox.paypal.com/v1/payments/payment/PAYID-MQE6AGY1VT87058TJ580034T/execute",
+  //         "rel": "execute",
+  //         "method": "POST"
+  //       },
+  //       {
+  //         "href": "https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=EC-2GP104344L5375539",
+  //         "rel": "approval_url",
+  //         "method": "REDIRECT"
+  //       }
+  //     ],
+  //     "id": "PAYID-MQE6AGY1VT87058TJ580034T",
+  //     "state": "created",
+  //     "transactions": [
+  //       {
+  //         "amount": {
+  //           "total": "10.99",
+  //           "currency": "USD"
+  //         },
+  //         "payee": {
+  //           "merchant_id": "VY3PSEWQ5LKAC",
+  //           "email": "sb-3qpio25212409@business.example.com"
+  //         },
+  //         "description": "Wallet Top-Up",
+  //         "item_list": {
+  //           "shipping_address": {
+  //             "recipient_name": "Naveen Hettiwaththa",
+  //             "line1": "adasdasd",
+  //             "line2": "asdasdasd",
+  //             "city": "Polgasowita",
+  //             "state": "",
+  //             "postal_code": "10320",
+  //             "country_code": "LK",
+  //             "default_address": false,
+  //             "preferred_address": false,
+  //             "primary_address": false,
+  //             "disable_for_transaction": false
+  //           }
+  //         },
+  //         "related_resources": []
+  //       }
+  //     ],
+  //     "intent": "sale",
+  //     "payer": {
+  //       "payment_method": "paypal",
+  //       "status": "UNVERIFIED",
+  //       "payer_info": {
+  //         "email": "hettiwaththanaveen333@gmail.com",
+  //         "first_name": "Naveen",
+  //         "last_name": "Hettiwaththa",
+  //         "payer_id": "LJ5D8R7LJL4NL",
+  //         "shipping_address": {
+  //           "recipient_name": "Naveen Hettiwaththa",
+  //           "line1": "adasdasd",
+  //           "line2": "asdasdasd",
+  //           "city": "Polgasowita",
+  //           "state": "",
+  //           "postal_code": "10320",
+  //           "country_code": "LK",
+  //           "default_address": false,
+  //           "preferred_address": false,
+  //           "primary_address": false,
+  //           "disable_for_transaction": false
+  //         },
+  //         "country_code": "LK"
+  //       }
+  //     },
+  //     "cart": "2GP104344L5375539"
+  //   },
+  //   "status": "PENDING",
+  //   "transmissions": [
+  //     {
+  //       "webhook_url": "https://stg-paymate.onrender.com/api/v1/transaction/callback",
+  //       "transmission_id": "560ed4d0-be7f-11ed-a23b-274b07fab631",
+  //       "status": "PENDING"
+  //     }
+  //   ],
+  //   "links": [
+  //     {
+  //       "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-36J85531N6456625V-9DY49322TM581760P",
+  //       "rel": "self",
+  //       "method": "GET",
+  //       "encType": "application/json"
+  //     },
+  //     {
+  //       "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-36J85531N6456625V-9DY49322TM581760P/resend",
+  //       "rel": "resend",
+  //       "method": "POST",
+  //       "encType": "application/json"
+  //     }
+  //   ],
+  //   "event_version": "1.0"
+  // }
+
   const body = req.body;
-  const transactionId = body.txn_id;
   try {
     let response = await webHookCallback(req, res);
 
