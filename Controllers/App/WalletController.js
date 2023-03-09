@@ -9,7 +9,7 @@ const {
 } = require("../../Services/PaypalSDKService");
 const CardInformation = require("../../Models/CardInformation");
 const AuthRequired = require("../../Middlewares/AuthRequired");
-const { hashData } = require("../../Services/passwordService");
+const { hashData } = require("../../Services/PasswordService");
 const Payment = require("../../Models/Payment");
 
 router.get("/", async (req, res) => {
