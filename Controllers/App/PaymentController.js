@@ -68,7 +68,7 @@ router.get("/cancel", async (req, res) => {
 router.post("/callback", async (req, res) => {
   const body = req.body;
   try {
-    let response = await webHookCallback(req, res);
+    // let response = await webHookCallback(req, res);
     let log = new PaymentCallBackLog({
       callBackObject: JSON.stringify(body),
     });
