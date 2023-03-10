@@ -70,7 +70,7 @@ router.post("/callback", async (req, res) => {
   try {
     let response = await webHookCallback(req, res);
     let log = new PaymentCallBackLog({
-      callBackObject: JSON.stringify(response),
+      callBackObject: JSON.stringify(body),
     });
 
     await log.save();
