@@ -4,6 +4,7 @@ const Joi = require("joi");
 const Payment = require("../../Models/Payment");
 const { webHookCallback } = require("../../Services/PaypalSDKService");
 const PaymentCallBackLog = require("../../Models/PaymentCallBackLog");
+const AuditLogRecord = require("../../Services/AuditLogService");
 
 router.get("/success", async (req, res) => {
   let paymentId = req.query.paymentId;
@@ -68,12 +69,15 @@ router.get("/cancel", async (req, res) => {
 router.post("/callback", async (req, res) => {
   const body = req.body;
   try {
-    // let response = await webHookCallback(req, res);
+    let response = await webHookCallback(req, res);
+
     let log = new PaymentCallBackLog({
       callBackObject: JSON.stringify(body),
     });
 
     await log.save();
+
+    AuditLogRecord(req, res, "Payment-callback-created");
 
     return res.status(200).json({
       message: "Transaction succeed",

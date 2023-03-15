@@ -79,13 +79,11 @@ const webHookCallback = async (req, res) => {
         if (error) {
           reject(error);
         }
-
         // Get the transaction details
-        paypal.payment.get(req.body.id, function (error, payment) {
+        paypal.payment.get(req.body.resource.id, function (error, payment) {
           if (error) {
             reject(error);
           }
-
           // Save the transaction details to your database
           resolve(payment);
         });
