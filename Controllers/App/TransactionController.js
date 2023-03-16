@@ -4,7 +4,9 @@ const Joi = require("joi");
 const { getTransactionStatus } = require("../../Services/PaypalSDKService");
 const Wallet = require("../../Models/Wallet");
 const Transaction = require("../../Models/Transaction");
+const Constance = require("../../Models/Constance");
 const AuthRequired = require("../../Middlewares/AuthRequired");
+const qrCode = require("qrcode");
 
 router.post("/fund-transfer", AuthRequired("User"), async (req, res) => {
   let validator = Joi.object({
@@ -20,6 +22,8 @@ router.post("/fund-transfer", AuthRequired("User"), async (req, res) => {
     let wallet = await Wallet.findOne({ userId: user._id });
     let toWallet = await Wallet.findOne({ _id: data.toWalletId });
 
+    let consts = await Constance.findOne({ _id: "6412de595c9d4b8374c2be4d" });
+
     if (wallet._id == data.toWalletId) {
       return res.status(400).json({
         message:
@@ -33,9 +37,16 @@ router.post("/fund-transfer", AuthRequired("User"), async (req, res) => {
       });
     }
 
-    if (data.amount < 0) {
+    if (
+      data.amount > consts.maxQrpayAmount ||
+      data.amount < consts.minQrpayAmount
+    ) {
       return res.status(400).json({
-        message: "Error while processing the transaction! Invalid amount.",
+        message:
+          "Maximum payment amount is " +
+          consts.maxQrpayAmount.toString() +
+          " and minimum payment amount is " +
+          consts.minQrpayAmount.toString(),
       });
     }
 
@@ -83,13 +94,81 @@ router.post("/fund-transfer", AuthRequired("User"), async (req, res) => {
     });
   }
 });
+
+router.post("/qr-init-payment", AuthRequired("User"), async (req, res) => {
+  let validator = Joi.object({
+    amount: Joi.number().required(),
+    userRemarks: Joi.string().required(),
+    receiverRemarks: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    let user = req.user;
+    let wallet = await Wallet.findOne({ userId: user._id });
+
+    let consts = await Constance.findOne({ _id: "6412de595c9d4b8374c2be4d" });
+
+    if (
+      data.amount > consts.maxQrpayAmount ||
+      data.amount < consts.minQrpayAmount
+    ) {
+      return res.status(400).json({
+        message:
+          "Maximum payment amount is " +
+          consts.maxQrpayAmount.toString() +
+          " and minimum payment amount is " +
+          consts.minQrpayAmount.toString(),
+      });
+    }
+
+    if (!wallet) {
+      return res.status(400).json({
+        message: "Error while processing the transaction! Wallet not found.",
+      });
+    }
+
+    let transaction = new Transaction({
+      fromUserId: req.user._id,
+      fromWalletId: wallet._id,
+      type: "qr-pay",
+      userRemarks: data.userRemarks,
+      receiverRemarks: data.receiverRemarks,
+      status: "created",
+      amount: data.amount,
+      payerId: null,
+      payerWallet: null,
+    });
+
+    await transaction.save();
+
+    let encode_data = JSON.stringify(transaction._id);
+
+    qrCode.toDataURL(encode_data, async (err, url) => {
+      if (err) {
+        return res.status(500).send("Internal server error");
+      } else {
+        await Transaction.updateOne({ _id: transaction._id }, { qrCode: url });
+        return res.status(200).json({
+          qrcode: url,
+          qrCodeHTML: `<img src='${url}' alt='Paymate QR Code'>`,
+        });
+      }
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Error while processing the transaction",
+    });
+  }
+});
+
 router.post("/qr-pay");
 
-router.post("/qr-init-payment");
 router.post("/get-user-transactions");
 
 router.post("/token-url-init-payment");
-router.post("/token-url-init-payment");
+
+router.post("/token-url-pay");
 
 router.get("/get-transaction-status", async (req, res) => {
   let transaction_id = req.query.payId;

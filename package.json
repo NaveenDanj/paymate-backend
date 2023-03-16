@@ -24,6 +24,7 @@
     "mongoose-paginate": "^5.0.3",
     "node-cron": "^3.0.2",
     "paypal-rest-sdk": "^1.8.1",
+    "qrcode": "^1.5.1",
     "request-ip": "^3.3.0",
     "uuid": "^9.0.0"
   }
