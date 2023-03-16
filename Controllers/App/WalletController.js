@@ -222,7 +222,7 @@ router.get("/get-my-transactions", AuthRequired("User"), async (req, res) => {
   return res.status(200).json({
     transactions: transactions,
     paging: {
-      count: await Wallet.countDocuments(),
+      count: await Transaction.countDocuments({ fromUserId: user._id }),
       page: page,
       limit: limit,
     },
