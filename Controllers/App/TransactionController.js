@@ -3,11 +3,15 @@ const router = express.Router();
 const Joi = require("joi");
 const { getTransactionStatus } = require("../../Services/PaypalSDKService");
 const Wallet = require("../../Models/Wallet");
+const Transaction = require("../../Models/Transaction");
+const AuthRequired = require("../../Middlewares/AuthRequired");
 
-router.post("/fund-transfer", async (req, res) => {
+router.post("/fund-transfer", AuthRequired("User"), async (req, res) => {
   let validator = Joi.object({
     toWalletId: Joi.string().required(),
     amount: Joi.number().required(),
+    userRemarks: Joi.string().required(),
+    receiverRemarks: Joi.string().required(),
   });
 
   try {
@@ -15,6 +19,13 @@ router.post("/fund-transfer", async (req, res) => {
     let user = req.user;
     let wallet = await Wallet.findOne({ userId: user._id });
     let toWallet = await Wallet.findOne({ _id: data.toWalletId });
+
+    if (wallet._id == data.toWalletId) {
+      return res.status(400).json({
+        message:
+          "Error while processing the transaction! Cannot fund to your own wallet.",
+      });
+    }
 
     if (!toWallet) {
       return res.status(400).json({
@@ -42,6 +53,29 @@ router.post("/fund-transfer", async (req, res) => {
     }
 
     // process the transaction
+    let transaction = new Transaction({
+      fromUserId: req.user._id,
+      fromWalletId: wallet._id,
+      toUserId: toWallet.userId,
+      toWalletId: toWallet._id,
+      type: "fund-transfer",
+      userRemarks: data.userRemarks,
+      receiverRemarks: data.receiverRemarks,
+      status: "created",
+      amount: data.amount,
+    });
+
+    await transaction.save();
+
+    // update the sender wallet balance
+    wallet.Balance = wallet.Balance - data.amount;
+    await wallet.save();
+
+    return res.status(200).json({
+      message: "Fund transfer transaction created",
+      transaction,
+      wallet,
+    });
   } catch (err) {
     return res.status(400).json({
       message: "Error while processing the transaction!",
