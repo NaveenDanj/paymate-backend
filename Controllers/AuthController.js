@@ -9,6 +9,7 @@ const { generateUUIDToken } = require("../Services/TokenService");
 const AuthRequired = require("../Middlewares/AuthRequired");
 const AuditLogRecord = require("../Services/AuditLogService");
 const Wallet = require("../Models/Wallet");
+const AuthToken = require("../Models/AuthToken");
 
 router.post("/", async (req, res) => {
   let validator = Joi.object({
@@ -162,10 +163,9 @@ router.post("/login-email", async (req, res) => {
     let _token = generateToken({ email: user.email });
     const ip = req.clientIp;
 
-    let accessToken = new Token({
+    let accessToken = new AuthToken({
       userId: user._id,
       token: _token,
-      type: "auth",
       deviceType: data.deviceType,
       IPAddress: req.socket.remoteAddress,
     });
@@ -218,7 +218,7 @@ router.post("/login-phone", async (req, res) => {
     let _token = generateToken({ email: user.email });
     const ip = req.clientIp;
 
-    let accessToken = new Token({
+    let accessToken = new AuthToken({
       userId: user._id,
       token: _token,
       type: "auth",
@@ -255,7 +255,7 @@ router.post("/logout", AuthRequired("User"), async (req, res) => {
   let user_token = req.headers["authorization"];
 
   try {
-    let token = await Token.findOne({ token: user_token });
+    let token = await AuthToken.findOne({ token: user_token });
 
     if (!token) {
       return res.status(400).json({

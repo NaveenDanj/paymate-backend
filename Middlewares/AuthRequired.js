@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 const Token = require("../Models/Token");
+const AuthToken = require("../Models/AuthToken");
 
 const AuthRequired = (userRole) => {
   return async (req, res, next) => {
@@ -18,7 +19,7 @@ const AuthRequired = (userRole) => {
 
     // in future check if token is in blacklist(logged out before token expired)
     try {
-      let checkExists = await Token.findOne({ token: token });
+      let checkExists = await AuthToken.findOne({ token: token });
 
       if (!checkExists) {
         return res.status(401).send({ error: "Unauthenticated" });
