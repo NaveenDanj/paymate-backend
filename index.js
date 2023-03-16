@@ -3,6 +3,8 @@ const app = express();
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cron = require("node-cron");
+
 const { ipMiddleware } = require("./Middlewares/GetIP");
 require("dotenv").config();
 
@@ -27,6 +29,11 @@ app.use("/", ipMiddleware());
 
 // initialize api routes
 app.use("/api/v1", Api);
+
+// initialize cron jobs
+// cron.schedule("*/5 * * * * *", () => {
+//   console.log("Cron job script ran!");
+// });
 
 let PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
