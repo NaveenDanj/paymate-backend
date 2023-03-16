@@ -11,6 +11,7 @@ const CardInformation = require("../../Models/CardInformation");
 const AuthRequired = require("../../Middlewares/AuthRequired");
 const { hashData } = require("../../Services/PasswordService");
 const Payment = require("../../Models/Payment");
+const Transaction = require("../../Models/Transaction");
 
 router.get("/", async (req, res) => {
   let page = +req.query.page || 1;
@@ -206,6 +207,26 @@ router.post("/topup-wallet", AuthRequired("User"), async (req, res) => {
       error: err,
     });
   }
+});
+
+router.get("/get-my-transactions", AuthRequired("User"), async (req, res) => {
+  let page = +req.query.page || 1;
+  let limit = +req.query.limit || 20;
+  let skip = (page - 1) * limit;
+  let user = req.user;
+
+  let transactions = await Transaction.find({ fromUserId: user._id })
+    .skip(skip)
+    .limit(limit);
+
+  return res.status(200).json({
+    transactions: transactions,
+    paging: {
+      count: await Wallet.countDocuments(),
+      page: page,
+      limit: limit,
+    },
+  });
 });
 
 module.exports = router;

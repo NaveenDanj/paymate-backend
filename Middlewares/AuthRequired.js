@@ -7,6 +7,7 @@ const AuthRequired = (userRole) => {
     const token = req.headers["authorization"];
 
     let roleMapper = {
+      SuperAdmin: 3,
       Admin: 2,
       User: 1,
     };
