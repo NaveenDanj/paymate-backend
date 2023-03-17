@@ -7,6 +7,7 @@ const Transaction = require("../../Models/Transaction");
 const Constance = require("../../Models/Constance");
 const AuthRequired = require("../../Middlewares/AuthRequired");
 const qrCode = require("qrcode");
+const { generateUUIDToken } = require("../../Services/TokenService");
 
 router.post("/fund-transfer", AuthRequired("User"), async (req, res) => {
   let validator = Joi.object({
@@ -162,13 +163,200 @@ router.post("/qr-init-payment", AuthRequired("User"), async (req, res) => {
   }
 });
 
-router.post("/qr-pay");
+router.post("/qr-pay", AuthRequired("User"), async (req, res) => {
+  let validator = Joi.object({
+    transactionId: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    let user = req.user;
+    let wallet = req.userWallet;
+
+    if (!wallet) {
+      return res.status(400).json({
+        message: "Error while processing the transaction! Wallet not found.",
+      });
+    }
+
+    let transaction = await Transaction.findOne({ _id: data.transactionId });
+
+    if (!transaction) {
+      return res.status(400).json({
+        message:
+          "Error while processing the transaction! Payment request not found.",
+      });
+    }
+
+    if (transaction.status != "created") {
+      return res.status(400).json({
+        message:
+          "Error while processing the transaction! Payment request expired.",
+      });
+    }
+
+    if (wallet.Balance < transaction.amount) {
+      return res.status(400).json({
+        message:
+          "Error while processing the transaction! Insufficient balance.",
+      });
+    }
+
+    wallet.Balance = wallet.Balance - transaction.amount;
+    await wallet.save();
+
+    await Transaction.updateOne(
+      { _id: transaction._id },
+      {
+        status: "quied",
+        payerId: user._id.toString(),
+        payerWallet: wallet._id.toString(),
+      }
+    );
+
+    return res.status(200).json({
+      message: "Qr payment accepted by the paymate",
+      transaction,
+      wallet,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Error while processing the transaction",
+    });
+  }
+});
 
 router.post("/get-user-transactions");
 
-router.post("/token-url-init-payment");
+router.post(
+  "/token-url-init-payment",
+  AuthRequired("User"),
+  async (req, res) => {
+    let validator = Joi.object({
+      amount: Joi.number().required(),
+      userRemarks: Joi.string().required(),
+      receiverRemarks: Joi.string().required(),
+    });
 
-router.post("/token-url-pay");
+    try {
+      const data = await validator.validateAsync(req.body, {
+        abortEarly: false,
+      });
+      let wallet = req.userWallet;
+
+      let consts = await Constance.findOne({ _id: "6412de595c9d4b8374c2be4d" });
+
+      if (
+        data.amount > consts.maxQrpayAmount ||
+        data.amount < consts.minQrpayAmount
+      ) {
+        return res.status(400).json({
+          message:
+            "Maximum payment amount is " +
+            consts.maxQrpayAmount.toString() +
+            " and minimum payment amount is " +
+            consts.minQrpayAmount.toString(),
+        });
+      }
+
+      if (!wallet) {
+        return res.status(400).json({
+          message: "Error while processing the transaction! Wallet not found.",
+        });
+      }
+
+      let token = generateUUIDToken();
+
+      let transaction = new Transaction({
+        fromUserId: req.user._id,
+        fromWalletId: wallet._id,
+        type: "token-pay",
+        userRemarks: data.userRemarks,
+        receiverRemarks: data.receiverRemarks,
+        status: "created",
+        amount: data.amount,
+        payerId: null,
+        payerWallet: null,
+        token: token,
+      });
+
+      await transaction.save();
+
+      return res.status(200).json({
+        message: "Payment Link created successfully",
+        token,
+        transaction,
+      });
+    } catch (err) {
+      return res.status(400).json({
+        message: "Error while processing the transaction",
+      });
+    }
+  }
+);
+
+router.post("/token-url-pay", AuthRequired("User"), async (req, res) => {
+  let validator = Joi.object({
+    transactionId: Joi.string().required(),
+  });
+
+  try {
+    const data = await validator.validateAsync(req.body, { abortEarly: false });
+    let user = req.user;
+    let wallet = req.userWallet;
+
+    if (!wallet) {
+      return res.status(400).json({
+        message: "Error while processing the transaction! Wallet not found.",
+      });
+    }
+
+    let transaction = await Transaction.findOne({ _id: data.transactionId });
+
+    if (!transaction) {
+      return res.status(400).json({
+        message:
+          "Error while processing the transaction! Payment request not found.",
+      });
+    }
+
+    if (transaction.status != "created") {
+      return res.status(400).json({
+        message:
+          "Error while processing the transaction! Payment request expired.",
+      });
+    }
+
+    if (wallet.Balance < transaction.amount) {
+      return res.status(400).json({
+        message:
+          "Error while processing the transaction! Insufficient balance.",
+      });
+    }
+
+    wallet.Balance = wallet.Balance - transaction.amount;
+    await wallet.save();
+
+    await Transaction.updateOne(
+      { _id: transaction._id },
+      {
+        status: "quied",
+        payerId: user._id.toString(),
+        payerWallet: wallet._id.toString(),
+      }
+    );
+
+    return res.status(200).json({
+      message: "Payment link accepted by the paymate",
+      transaction,
+      wallet,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "Error while processing the transaction",
+    });
+  }
+});
 
 router.get("/get-transaction-status", async (req, res) => {
   let transaction_id = req.query.payId;

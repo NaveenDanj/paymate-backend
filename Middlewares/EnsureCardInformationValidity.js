@@ -1,6 +1,6 @@
 const CardInformation = require("../Models/CardInformation");
 
-const AuthRequired = () => {
+const EnsureCardInformationValidity = () => {
   return async (req, res, next) => {
     let user = req.user;
 
@@ -20,4 +20,4 @@ const AuthRequired = () => {
   };
 };
 
-module.exports = AuthRequired;
+module.exports = EnsureCardInformationValidity;

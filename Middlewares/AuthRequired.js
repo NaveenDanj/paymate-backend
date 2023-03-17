@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 const Token = require("../Models/Token");
 const AuthToken = require("../Models/AuthToken");
+const Wallet = require("../Models/Wallet");
 
 const AuthRequired = (userRole) => {
   return async (req, res, next) => {
@@ -40,6 +41,7 @@ const AuthRequired = (userRole) => {
         }
 
         req.user = user;
+        req.userWallet = await Wallet.findOne({ userId: req.user._id });
         next();
       } catch (err) {
         return res.status(401).send({ error: "Unauthenticated" });
