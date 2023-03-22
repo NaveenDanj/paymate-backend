@@ -37,5 +37,5 @@ app.use("/api/v1", Api);
 
 let PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server started at port http://localhost:${PORT}`);
+  console.log(`Server started at http://localhost:${PORT}`);
 });
